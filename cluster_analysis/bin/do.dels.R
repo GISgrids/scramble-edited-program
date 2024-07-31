@@ -1,3 +1,5 @@
+library(stringr)
+library(Biostrings)
 ## FIND DELETIONS
 del.finder = function(dat){
   print(paste("Two-End-Deletions: Working on contig", unique(dat$RNAME)))
@@ -201,6 +203,21 @@ one.end.dels=function(df, hits, minDelLen=50){
 }
 ###########################################################
 do.dels = function(df,indelScore, minDelLen=50, pctAlign=90, blastRef){
+  # EDIT: Added in:
+  all.n.row.nos <- NULL
+  for (i in 1:nrow(df)) {
+    my_string <- tolower(df[i,4])
+    my_string <- gsub("[^a-z]", "", my_string)
+    char_list <- strsplit(my_string, "")[[1]]
+    if (all(char_list == "n")) {
+      all.n.row.nos <- c(all.n.row.nos, i)
+    }
+  }
+  if (length(all.n.row.nos) >= 1) {
+    df <- df[-all.n.row.nos,]
+  }
+  # Until here
+  
   # REMOVE SIMPLE CLIPPED READ CLUSTERS AND ALIGN TO reference
   if(nrow(df)==0){ # account for 0 clipped clusters
     df$complexity.p = numeric(0)
@@ -211,6 +228,7 @@ do.dels = function(df,indelScore, minDelLen=50, pctAlign=90, blastRef){
   df = df[df$complexity.p >= 0.00001,]
   after = nrow(df)
   cat(before-after, "clusters out of", before, "were removed due to simple sequence\n")
+  
   source("blast.clipped.R")
   
   aligned.clusters=blast.clipped(df, indelScore=indelScore, pctAlign=pctAlign, blastRef)

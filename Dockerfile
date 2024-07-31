@@ -1,5 +1,5 @@
 # source Image
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 
 # set noninterative mode
 ENV DEBIAN_FRONTEND noninteractive
@@ -12,9 +12,10 @@ RUN apt-get clean all && \
         autoconf \
         autogen \
         build-essential \
+	bcftools \
         curl \
         libbz2-dev \
-        libcurl4-openssl-dev \
+        libcurl4-gnutls-dev \
         libhts3 \
         libhts-dev \
         liblzma-dev \
@@ -38,7 +39,7 @@ RUN apt-get clean && \
 
 # install global r requirements
 RUN echo "r <- getOption('repos'); r['CRAN'] <- 'http://cran.us.r-project.org'; options(repos = r);" > ~/.Rprofile
-RUN Rscript -e "library(devtools); install_github('mhahsler/rBLAST')"
+RUN Rscript -e "library(devtools); install_github('mhahsler/rBLAST', ref='devel', force = TRUE)"
 
 # install scramble
 COPY . /app
